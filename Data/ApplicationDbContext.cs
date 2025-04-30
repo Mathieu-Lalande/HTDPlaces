@@ -21,11 +21,13 @@ public class ApplicationDbContext : IdentityDbContext
 
         builder.Entity<User>()
             .HasMany(u => u.CreatedEvent)
-            .WithOne(e => e.Creator);
+            .WithOne(e => e.Creator)
+            .HasForeignKey("CreatorId");
 
         builder.Entity<Event>()
             .HasOne(e => e.Creator)
-            .WithMany(u => u.CreatedEvent);
+            .WithMany(u => u.CreatedEvent)
+            .HasForeignKey("CreatorId");
 
         builder.Entity<User>()
             .HasMany(u => u.JoinedEvents)
@@ -34,5 +36,10 @@ public class ApplicationDbContext : IdentityDbContext
         builder.Entity<Event>()
             .HasMany(e => e.Participants)
             .WithMany(u => u.JoinedEvents);
+
+        builder.Entity<Event>()
+            .HasOne(e => e.Category)
+            .WithMany(c => c.Events)
+            .HasForeignKey("CategoryId"); // Ajout de la relation avec Category
     }
 }

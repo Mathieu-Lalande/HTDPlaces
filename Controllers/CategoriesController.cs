@@ -7,31 +7,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HTDPlaces.Data;
 using HTDPlaces.Models;
-using Microsoft.AspNetCore.Identity;
 
 namespace HTDPlaces.Controllers
 {
-    public class EventsController : Controller
+    public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger<EventsController> _logger;
-        private readonly UserManager<User> _userManager;
 
-
-        public EventsController(ApplicationDbContext context, ILogger<EventsController> logger, UserManager<User> userManager)
+        public CategoriesController(ApplicationDbContext context)
         {
             _context = context;
-            _logger = logger;
-            _userManager = userManager;
         }
 
-        // GET: Events
+        // GET: Categories
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Events.ToListAsync());
+            return View(await _context.Categories.ToListAsync());
         }
 
-        // GET: Events/Details/5
+        // GET: Categories/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -39,43 +33,46 @@ namespace HTDPlaces.Controllers
                 return NotFound();
             }
 
-            var @event = await _context.Events
+            var category = await _context.Categories
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (@event == null)
+            if (category == null)
             {
                 return NotFound();
             }
 
-            return View(@event);
+            return View(category);
         }
 
-        // GET: Events/Create
+        // GET: Categories/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Events/Create
+        // POST: Categories/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,StartDate,EndDate,Location, Category")] Event @event)
+        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
         {
             if (ModelState.IsValid)
             {
-                var @event = _mapper
+                _context.Add(category);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            // Log des erreurs de validation
+
+            // Ajouter des logs pour vérifier les valeurs soumises
             foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
             {
-                _logger.LogError(error.ErrorMessage);
+                Console.WriteLine(error.ErrorMessage);
             }
 
-            return View(@event);
+            return View(category);
         }
 
-        // GET: Events/Edit/5
+        // GET: Categories/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -83,22 +80,22 @@ namespace HTDPlaces.Controllers
                 return NotFound();
             }
 
-            var @event = await _context.Events.FindAsync(id);
-            if (@event == null)
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
             {
                 return NotFound();
             }
-            return View(@event);
+            return View(category);
         }
 
-        // POST: Events/Edit/5
+        // POST: Categories/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,Location")] Event @event)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
         {
-            if (id != @event.Id)
+            if (id != category.Id)
             {
                 return NotFound();
             }
@@ -107,12 +104,12 @@ namespace HTDPlaces.Controllers
             {
                 try
                 {
-                    _context.Update(@event);
+                    _context.Update(category);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EventExists(@event.Id))
+                    if (!CategoryExists(category.Id))
                     {
                         return NotFound();
                     }
@@ -123,10 +120,10 @@ namespace HTDPlaces.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(@event);
+            return View(category);
         }
 
-        // GET: Events/Delete/5
+        // GET: Categories/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -134,34 +131,34 @@ namespace HTDPlaces.Controllers
                 return NotFound();
             }
 
-            var @event = await _context.Events
+            var category = await _context.Categories
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (@event == null)
+            if (category == null)
             {
                 return NotFound();
             }
 
-            return View(@event);
+            return View(category);
         }
 
-        // POST: Events/Delete/5
+        // POST: Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var @event = await _context.Events.FindAsync(id);
-            if (@event != null)
+            var category = await _context.Categories.FindAsync(id);
+            if (category != null)
             {
-                _context.Events.Remove(@event);
+                _context.Categories.Remove(category);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool EventExists(int id)
+        private bool CategoryExists(int id)
         {
-            return _context.Events.Any(e => e.Id == id);
+            return _context.Categories.Any(e => e.Id == id);
         }
     }
 }
